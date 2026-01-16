@@ -1,0 +1,250 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Notes to Self</title>
+  <meta name="description" content="A simple private notes-to-self web app using localStorage." />
+  <style>
+    :root {
+      --bg: #0f172a;
+      --card: #111827;
+      --muted: #94a3b8;
+      --text: #e5e7eb;
+      --accent: #38bdf8;
+      --danger: #ef4444;
+    }
+
+    * { box-sizing: border-box; }
+
+    body {
+      margin: 0;
+      min-height: 100vh;
+      font-family: system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+      background: linear-gradient(135deg, #020617, #0f172a);
+      color: var(--text);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+    }
+
+    .app {
+      width: 100%;
+      max-width: 720px;
+      background: var(--card);
+      border-radius: 16px;
+      padding: 20px;
+      box-shadow: 0 20px 40px rgba(0,0,0,.5);
+    }
+
+    header {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      margin-bottom: 16px;
+    }
+
+    header h1 {
+      font-size: 1.4rem;
+      margin: 0;
+    }
+
+    header span {
+      font-size: 0.85rem;
+      color: var(--muted);
+    }
+
+    textarea {
+      width: 100%;
+      min-height: 100px;
+      resize: vertical;
+      border-radius: 12px;
+      border: 1px solid #1f2933;
+      padding: 12px;
+      font-size: 1rem;
+      background: #020617;
+      color: var(--text);
+    }
+
+    textarea:focus {
+      outline: none;
+      border-color: var(--accent);
+    }
+
+    .actions {
+      display: flex;
+      gap: 10px;
+      margin-top: 10px;
+    }
+
+    button {
+      border: none;
+      border-radius: 10px;
+      padding: 10px 14px;
+      font-size: 0.9rem;
+      cursor: pointer;
+      background: var(--accent);
+      color: #020617;
+      font-weight: 600;
+    }
+
+    button.secondary {
+      background: #1f2937;
+      color: var(--text);
+    }
+
+    button.danger {
+      background: var(--danger);
+      color: white;
+    }
+
+    ul {
+      list-style: none;
+      padding: 0;
+      margin: 18px 0 0 0;
+      display: grid;
+      gap: 10px;
+    }
+
+    li {
+      background: #020617;
+      border: 1px solid #1f2937;
+      border-radius: 12px;
+      padding: 12px;
+    }
+
+    .note-text {
+      white-space: pre-wrap;
+      margin-bottom: 8px;
+    }
+
+    .note-meta {
+      display: flex;
+      justify-content: space-between;
+      font-size: 0.75rem;
+      color: var(--muted);
+    }
+
+    .note-meta button {
+      padding: 4px 8px;
+      font-size: 0.7rem;
+    }
+
+    footer {
+      margin-top: 14px;
+      font-size: 0.75rem;
+      color: var(--muted);
+      text-align: center;
+    }
+  </style>
+</head>
+<body>
+  <div class="app">
+    <header>
+      <h1>📝 Notes to Self</h1>
+      <span>Stored locally</span>
+    </header>
+
+    <textarea id="noteInput" placeholder="Write a note to yourself..."></textarea>
+
+    <div class="actions">
+      <button onclick="saveNote()">Save Note</button>
+      <button class="secondary" onclick="clearInput()">Clear</button>
+      <button class="danger" onclick="clearAllNotes()">Delete All</button>
+    </div>
+
+    <ul id="notesList"></ul>
+
+    <footer>
+      Private by design • No account • No cloud
+    </footer>
+  </div>
+
+  <script>
+    const STORAGE_KEY = "notes_to_self";
+
+    function loadNotes() {
+      return JSON.parse(localStorage.getItem(STORAGE_KEY)) || [];
+    }
+
+    function saveNotes(notes) {
+      localStorage.setItem(STORAGE_KEY, JSON.stringify(notes));
+    }
+
+    function saveNote() {
+      const input = document.getElementById("noteInput");
+      const text = input.value.trim();
+      if (!text) return;
+
+      const notes = loadNotes();
+      notes.unshift({
+        id: crypto.randomUUID(),
+        text,
+        created: new Date().toISOString()
+      });
+
+      saveNotes(notes);
+      input.value = "";
+      renderNotes();
+    }
+
+    function deleteNote(id) {
+      const notes = loadNotes().filter(n => n.id !== id);
+      saveNotes(notes);
+      renderNotes();
+    }
+
+    function clearAllNotes() {
+      if (!confirm("Delete all notes?")) return;
+      localStorage.removeItem(STORAGE_KEY);
+      renderNotes();
+    }
+
+    function clearInput() {
+      document.getElementById("noteInput").value = "";
+    }
+
+    function renderNotes() {
+      const list = document.getElementById("notesList");
+      const notes = loadNotes();
+      list.innerHTML = "";
+
+      if (notes.length === 0) {
+        const empty = document.createElement("li");
+        empty.style.color = "#94a3b8";
+        empty.textContent = "No notes yet.";
+        list.appendChild(empty);
+        return;
+      }
+
+      for (const note of notes) {
+        const li = document.createElement("li");
+
+        const text = document.createElement("div");
+        text.className = "note-text";
+        text.textContent = note.text;
+
+        const meta = document.createElement("div");
+        meta.className = "note-meta";
+
+        const time = document.createElement("span");
+        time.textContent = new Date(note.created).toLocaleString();
+
+        const del = document.createElement("button");
+        del.className = "danger";
+        del.textContent = "Delete";
+        del.onclick = () => deleteNote(note.id);
+
+        meta.appendChild(time);
+        meta.appendChild(del);
+
+        li.appendChild(text);
+        li.appendChild(meta);
+        list.appendChild(li);
+      }
+    }
+
+    renderNotes();
+  </script>
+</body>
+</html>
