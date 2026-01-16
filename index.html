@@ -1,250 +1,92 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-  <meta charset="UTF-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>Notes to Self</title>
-  <meta name="description" content="A simple private notes-to-self web app using localStorage." />
-  <style>
-    :root {
-      --bg: #0f172a;
-      --card: #111827;
-      --muted: #94a3b8;
-      --text: #e5e7eb;
-      --accent: #38bdf8;
-      --danger: #ef4444;
-    }
-
-    * { box-sizing: border-box; }
-
-    body {
-      margin: 0;
-      min-height: 100vh;
-      font-family: system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
-      background: linear-gradient(135deg, #020617, #0f172a);
-      color: var(--text);
-      display: flex;
-      align-items: center;
-      justify-content: center;
-    }
-
-    .app {
-      width: 100%;
-      max-width: 720px;
-      background: var(--card);
-      border-radius: 16px;
-      padding: 20px;
-      box-shadow: 0 20px 40px rgba(0,0,0,.5);
-    }
-
-    header {
-      display: flex;
-      align-items: center;
-      justify-content: space-between;
-      margin-bottom: 16px;
-    }
-
-    header h1 {
-      font-size: 1.4rem;
-      margin: 0;
-    }
-
-    header span {
-      font-size: 0.85rem;
-      color: var(--muted);
-    }
-
-    textarea {
-      width: 100%;
-      min-height: 100px;
-      resize: vertical;
-      border-radius: 12px;
-      border: 1px solid #1f2933;
-      padding: 12px;
-      font-size: 1rem;
-      background: #020617;
-      color: var(--text);
-    }
-
-    textarea:focus {
-      outline: none;
-      border-color: var(--accent);
-    }
-
-    .actions {
-      display: flex;
-      gap: 10px;
-      margin-top: 10px;
-    }
-
-    button {
-      border: none;
-      border-radius: 10px;
-      padding: 10px 14px;
-      font-size: 0.9rem;
-      cursor: pointer;
-      background: var(--accent);
-      color: #020617;
-      font-weight: 600;
-    }
-
-    button.secondary {
-      background: #1f2937;
-      color: var(--text);
-    }
-
-    button.danger {
-      background: var(--danger);
-      color: white;
-    }
-
-    ul {
-      list-style: none;
-      padding: 0;
-      margin: 18px 0 0 0;
-      display: grid;
-      gap: 10px;
-    }
-
-    li {
-      background: #020617;
-      border: 1px solid #1f2937;
-      border-radius: 12px;
-      padding: 12px;
-    }
-
-    .note-text {
-      white-space: pre-wrap;
-      margin-bottom: 8px;
-    }
-
-    .note-meta {
-      display: flex;
-      justify-content: space-between;
-      font-size: 0.75rem;
-      color: var(--muted);
-    }
-
-    .note-meta button {
-      padding: 4px 8px;
-      font-size: 0.7rem;
-    }
-
-    footer {
-      margin-top: 14px;
-      font-size: 0.75rem;
-      color: var(--muted);
-      text-align: center;
-    }
-  </style>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<title>Personal Notes</title>
+<meta name="theme-color" content="#0f172a">
+<link rel="manifest" href="manifest.json">
+<style>
+:root{--bg:#020617;--card:#0f172a;--text:#e5e7eb;--muted:#94a3b8;--accent:#38bdf8;--danger:#ef4444}
+*{box-sizing:border-box}
+body{margin:0;min-height:100vh;font-family:system-ui;background:linear-gradient(135deg,#020617,#0f172a);color:var(--text);display:flex;align-items:center;justify-content:center}
+.app{width:100%;max-width:720px;background:var(--card);border-radius:16px;padding:20px;box-shadow:0 20px 40px rgba(0,0,0,.5)}
+h1{margin:0 0 10px 0;font-size:1.2rem}
+input,textarea,select{width:100%;padding:12px;border-radius:12px;border:1px solid #1f2937;background:#020617;color:var(--text)}
+textarea{min-height:120px;resize:vertical}
+.actions{display:flex;gap:10px;margin-top:10px;flex-wrap:wrap}
+button{border:none;border-radius:10px;padding:10px 14px;font-size:.9rem;cursor:pointer;background:var(--accent);color:#020617;font-weight:600}
+button.secondary{background:#1f2937;color:var(--text)}
+button.danger{background:var(--danger);color:#fff}
+ul{list-style:none;padding:0;margin:16px 0 0 0;display:grid;gap:10px}
+li{background:#020617;border:1px solid #1f2937;border-radius:12px;padding:12px}
+.note-meta{font-size:.75rem;color:var(--muted);display:flex;justify-content:space-between}
+.hidden{display:none}
+</style>
 </head>
 <body>
-  <div class="app">
-    <header>
-      <h1>📝 Notes to Self</h1>
-      <span>Stored locally</span>
-    </header>
+<div class="app">
 
-    <textarea id="noteInput" placeholder="Write a note to yourself..."></textarea>
+<!-- STEALTH SCREEN -->
+<div id="stealth">
+<h1>Calculator</h1>
+<input placeholder="0" disabled>
+<div class="actions">
+<button class="secondary" onclick="exitStealth()">=</button>
+</div>
+</div>
 
-    <div class="actions">
-      <button onclick="saveNote()">Save Note</button>
-      <button class="secondary" onclick="clearInput()">Clear</button>
-      <button class="danger" onclick="clearAllNotes()">Delete All</button>
-    </div>
+<!-- LOCK / PROFILE SCREEN -->
+<div id="lock" class="hidden">
+<h1>Unlock</h1>
+<select id="profile"></select>
+<input id="pin" type="password" inputmode="numeric" placeholder="PIN">
+<div class="actions">
+<button onclick="unlock()">Unlock</button>
+<button class="secondary" onclick="newProfile()">New Profile</button>
+</div>
+</div>
 
-    <ul id="notesList"></ul>
+<!-- APP -->
+<div id="app" class="hidden">
+<h1 id="profileName"></h1>
+<textarea id="noteInput" placeholder="Write a note..."></textarea>
+<div class="actions">
+<button onclick="saveNote()">Save</button>
+<button class="secondary" onclick="lockApp()">Lock</button>
+<button class="danger" onclick="clearNotes()">Clear</button>
+</div>
+<ul id="notes"></ul>
+</div>
 
-    <footer>
-      Private by design • No account • No cloud
-    </footer>
-  </div>
+</div>
 
-  <script>
-    const STORAGE_KEY = "notes_to_self";
+<script>
+const DB_KEY="notes_profiles";
+let current=null;
 
-    function loadNotes() {
-      return JSON.parse(localStorage.getItem(STORAGE_KEY)) || [];
-    }
+function db(){return JSON.parse(localStorage.getItem(DB_KEY)||"{}");}
+function saveDb(d){localStorage.setItem(DB_KEY,JSON.stringify(d));}
 
-    function saveNotes(notes) {
-      localStorage.setItem(STORAGE_KEY, JSON.stringify(notes));
-    }
+async function hash(v){const b=await crypto.subtle.digest("SHA-256",new TextEncoder().encode(v));return Array.from(new Uint8Array(b)).map(x=>x.toString(16).padStart(2,"0")).join("")}
 
-    function saveNote() {
-      const input = document.getElementById("noteInput");
-      const text = input.value.trim();
-      if (!text) return;
+function exitStealth(){document.getElementById("stealth").classList.add("hidden");document.getElementById("lock").classList.remove("hidden");loadProfiles()}
 
-      const notes = loadNotes();
-      notes.unshift({
-        id: crypto.randomUUID(),
-        text,
-        created: new Date().toISOString()
-      });
+function loadProfiles(){const p=db();const sel=document.getElementById("profile");sel.innerHTML="";Object.keys(p).forEach(k=>{const o=document.createElement("option");o.value=k;o.textContent=k;sel.appendChild(o)})}
 
-      saveNotes(notes);
-      input.value = "";
-      renderNotes();
-    }
+async function newProfile(){const name=prompt("Profile name");if(!name)return;const pin=prompt("Set PIN (4+ digits)");if(!pin||pin.length<4)return;const d=db();d[name]={pin:await hash(pin),notes:[]};saveDb(d);loadProfiles()}
 
-    function deleteNote(id) {
-      const notes = loadNotes().filter(n => n.id !== id);
-      saveNotes(notes);
-      renderNotes();
-    }
+async function unlock(){const sel=document.getElementById("profile").value;const pin=document.getElementById("pin").value;const d=db();if(!d[sel])return;const h=await hash(pin);if(h!==d[sel].pin)return alert("Wrong PIN");current=sel;document.getElementById("lock").classList.add("hidden");document.getElementById("app").classList.remove("hidden");document.getElementById("profileName").textContent=sel;render()}
 
-    function clearAllNotes() {
-      if (!confirm("Delete all notes?")) return;
-      localStorage.removeItem(STORAGE_KEY);
-      renderNotes();
-    }
+function lockApp(){current=null;document.getElementById("app").classList.add("hidden");document.getElementById("lock").classList.remove("hidden")}
 
-    function clearInput() {
-      document.getElementById("noteInput").value = "";
-    }
+function saveNote(){const t=document.getElementById("noteInput").value.trim();if(!t)return;const d=db();d[current].notes.unshift({t,ts:new Date().toISOString()});saveDb(d);document.getElementById("noteInput").value="";render()}
 
-    function renderNotes() {
-      const list = document.getElementById("notesList");
-      const notes = loadNotes();
-      list.innerHTML = "";
+function clearNotes(){if(!confirm("Clear all notes?"))return;const d=db();d[current].notes=[];saveDb(d);render()}
 
-      if (notes.length === 0) {
-        const empty = document.createElement("li");
-        empty.style.color = "#94a3b8";
-        empty.textContent = "No notes yet.";
-        list.appendChild(empty);
-        return;
-      }
+function render(){const ul=document.getElementById("notes");ul.innerHTML="";const d=db()[current].notes;d.forEach(n=>{const li=document.createElement("li");li.textContent=n.t;const m=document.createElement("div");m.className="note-meta";m.textContent=new Date(n.ts).toLocaleString();li.appendChild(m);ul.appendChild(li)})}
 
-      for (const note of notes) {
-        const li = document.createElement("li");
-
-        const text = document.createElement("div");
-        text.className = "note-text";
-        text.textContent = note.text;
-
-        const meta = document.createElement("div");
-        meta.className = "note-meta";
-
-        const time = document.createElement("span");
-        time.textContent = new Date(note.created).toLocaleString();
-
-        const del = document.createElement("button");
-        del.className = "danger";
-        del.textContent = "Delete";
-        del.onclick = () => deleteNote(note.id);
-
-        meta.appendChild(time);
-        meta.appendChild(del);
-
-        li.appendChild(text);
-        li.appendChild(meta);
-        list.appendChild(li);
-      }
-    }
-
-    renderNotes();
-  </script>
+if("serviceWorker"in navigator){navigator.serviceWorker.register("sw.js")}
+</script>
 </body>
 </html>
